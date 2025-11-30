@@ -88,11 +88,13 @@ You need \*\*Python 3.10+\*\*.
 
 \### Install dependencies:
 
-```bash
+
 
 pip install fastapi uvicorn websockets
 
 
+
+\### Run C2
 
 
 
@@ -100,7 +102,7 @@ python c2\_server.py
 
 
 
-🕹 Operator Dashboard
+\### 🕹 Operator Dashboard
 
 
 
@@ -114,7 +116,7 @@ http://YOUR-SERVER:8001/
 
 
 
-Dashboard features:
+\### Dashboard features:
 
 
 
@@ -142,7 +144,7 @@ Everything updates in real time via WebSockets.
 
 
 
-🧩 Implant Behavior (ghost\_implant.cpp)
+\### 🧩 Implant Behavior (ghost\_implant.cpp)
 
 
 
@@ -190,7 +192,7 @@ This design provides high responsiveness and low network signature.
 
 
 
-⚠️ Legal \& Ethical Notice
+\### ⚠️ Legal \& Ethical Notice
 
 
 
